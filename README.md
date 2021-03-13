@@ -1,6 +1,6 @@
 # MOFS-BACO
 
-# Academic year : 2020 - 2021
+Academic year : 2020 - 2021
 
 # Title : Binary Ant Colony Optimization with Self-learning for Multi Objective Feature Selection
 
