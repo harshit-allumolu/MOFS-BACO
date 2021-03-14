@@ -7,6 +7,9 @@
 """
 
 from bas import Ant, BinaryAntSystem
+from evaluation import evaluation
+import pandas as pd
+import numpy as np
 
 
 def MOFS-BACO(numFeatures):
