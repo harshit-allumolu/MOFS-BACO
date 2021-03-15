@@ -8,7 +8,7 @@
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import LeaveOneOut
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import accuracy_score
 
 
 def evaluation(x, y):
@@ -20,6 +20,9 @@ def evaluation(x, y):
         Purpose : Evaluation of constructed subsets using
                 LOOCV in k-nn and mean squared error
     """
+
+    # lambda value
+    l = 0.01    # tuning required
 
     # leave one out cross validator
     cv = LeaveOneOut()
@@ -33,7 +36,7 @@ def evaluation(x, y):
         y_train, y_test = y[train_ix], y[test_ix]
         
         # fit Knn classifier
-        model = KNeighborsClassifier(n_neighbors=1)
+        model = KNeighborsClassifier(n_neighbors=1)     # tuning required
         model.fit(x_train, y_train)
 
         # predict and store the output
@@ -41,6 +44,10 @@ def evaluation(x, y):
         y_true.append(y_test[0])
         y_pred.append(y_hat[0])
     
-    # error calculation
-    error = mean_squared_error(y_true, y_pred)
+    # accuracy calculation
+    acc = accuracy_score(y_true,y_pred)
+    
+    # fitness function (Error)
+    error = acc / (1 + l * len(x[0]))
+
     return error

@@ -27,7 +27,7 @@ class Ant:
         """
 
         # A string of length = numFeatures is initialized with all 0s
-        self.solution = [random.randint(0,1) for _ in range(numFeatures)]
+        self.solution = [0 for _ in range(numFeatures)]
         
         # A variable to store the classification error
         self.error = 0      # initialized with ideal 0 error
@@ -114,12 +114,19 @@ class BinaryAntSystem:
 
         for i in range(self.m):
             for j in range(self.numFeatures):
+                flag = 0
+                # max probability
                 if self.t0[j] < self.t1[j]:
-                    self.population[i][j] = 1
-                else if self.t0[j] == self.t1[j]:
-                    r = random.randint(0,1)
-                    if r == 1:
-                        self.population[i][j] = 1
+                    max_p = self.t1[j]
+                    flag = 1
+                else:
+                    max_p = self.t0[j]
+                # for random paths
+                if random.random() < max_p:
+                    self.population[i][j] = flag
+                else:
+                    self.population[i][j] = random.randint(0,1)
+            # number of features selected
             self.population[i].numFeaturesSelected = self.population[i].count(1)
     
 
