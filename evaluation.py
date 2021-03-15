@@ -19,10 +19,9 @@ def evaluation(x, y):
             -- y : input types/classes
         Purpose : Evaluation of constructed subsets using
                 LOOCV in k-nn and mean squared error
+        Returns : 
+            -- acc : Accuracy on the given dataset
     """
-
-    # lambda value
-    l = 0.01    # tuning required
 
     # leave one out cross validator
     cv = LeaveOneOut()
@@ -46,8 +45,5 @@ def evaluation(x, y):
     
     # accuracy calculation
     acc = accuracy_score(y_true,y_pred)
-    
-    # fitness function (Error)
-    error = acc / (1 + l * len(x[0]))
 
-    return error
+    return acc

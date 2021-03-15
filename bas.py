@@ -13,7 +13,7 @@ class Ant:
         Attributes : 
             -- solution : A binary string representing the features selected
                         (1 if selected, 0 otherwise)
-            -- error : The classification error for the features selected by this 
+            -- fitness : The fitness value obtained using classification accuracy for the features selected by this 
                         particular ant after traversing through the graph
             -- numFeaturesSelected : The number of features selected in the solution
                         which is the number of 1s in the string
@@ -29,8 +29,8 @@ class Ant:
         # A string of length = numFeatures is initialized with all 0s
         self.solution = [0 for _ in range(numFeatures)]
         
-        # A variable to store the classification error
-        self.error = 0      # initialized with ideal 0 error
+        # A variable to store the fitness value obtained from classification
+        self.fitness = 0      # initialized with ideal 0 error
 
         # A variable to track the no. of features selected in the solution
         self.numFeaturesSelected = self.solution.count(1)
@@ -101,7 +101,7 @@ class BinaryAntSystem:
         self.population = list()
         # ants
         for _ in range(self.m):
-            self.population.append(Ant(numFeatures))
+            self.population.append(Ant(self.numFeatures))
 
 
     def traverse(self):
@@ -113,21 +113,22 @@ class BinaryAntSystem:
         """
 
         for i in range(self.m):
-            for j in range(self.numFeatures):
-                flag = 0
-                # max probability
-                if self.t0[j] < self.t1[j]:
-                    max_p = self.t1[j]
-                    flag = 1
-                else:
-                    max_p = self.t0[j]
-                # for random paths
-                if random.random() < max_p:
-                    self.population[i][j] = flag
-                else:
-                    self.population[i][j] = random.randint(0,1)
-            # number of features selected
-            self.population[i].numFeaturesSelected = self.population[i].count(1)
+            while self.population[i].numFeaturesSelected == 0:
+                for j in range(self.numFeatures):
+                    flag = 0
+                    # max probability
+                    if self.t0[j] < self.t1[j]:
+                        max_p = self.t1[j]
+                        flag = 1
+                    else:
+                        max_p = self.t0[j]
+                    # for random paths
+                    if random.random() < max_p:
+                        self.population[i].solution[j] = flag
+                    else:
+                        self.population[i].solution[j] = random.randint(0,1)
+                # number of features selected
+                self.population[i].numFeaturesSelected = self.population[i].solution.count(1)
     
 
     def convergenceFactor(self):
@@ -140,7 +141,7 @@ class BinaryAntSystem:
 
         cf = 0
         for i in range(self.numFeatures):
-            cf += abs(t0[i]-t1[i])
+            cf += abs(self.t0[i] - self.t1[i])
         cf /= self.numFeatures
         self.cf = cf
 
@@ -156,8 +157,8 @@ class BinaryAntSystem:
 
         # evaporation
         for i in range(self.numFeatures):
-            t0[i] = (1-self.ro)*t0[i]
-            t1[i] = (1-self.ro)*t1[i]
+            self.t0[i] = (1-self.ro) * self.t0[i]
+            self.t1[i] = (1-self.ro)* self.t1[i]
         
         # intensification
         ind = int(self.cf/0.2)-1
@@ -169,7 +170,7 @@ class BinaryAntSystem:
                 temp += self.w[ind][1]
             if Supd[2].solution[i] == 1:
                 temp += self.w[ind][2]
-            t0[i] += self.ro*temp
-            t1[i] += self.ro*temp
+            self.t0[i] += self.ro*temp
+            self.t1[i] += self.ro*temp
 
         # check about re-initialization 
