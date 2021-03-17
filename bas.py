@@ -80,7 +80,7 @@ class BinaryAntSystem:
         # convergence factor
         self.cf = 0
         # thresholds
-        self.cfThresholds = [0.2,0.4,0.6,0.8,1]
+        self.cfThresholds = [0.3,0.5,0.7,0.9,0.95]
         # weights for intensification
         self.w = [
             [1,0,0],

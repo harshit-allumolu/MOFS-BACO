@@ -8,6 +8,8 @@
 
 from bas import Ant, BinaryAntSystem
 from evaluation import evaluation
+from evaluation import features
+from ops import OPS
 import pandas as pd
 import numpy as np
 
@@ -23,7 +25,7 @@ def MOFS_BACO(numFeatures, x, y):
     
     # intialization
     graph = BinaryAntSystem(numFeatures)
-    P = 10              # OPS interval
+    P = 5              # OPS interval
     iterations = 10   # tuning required
     lambda_ = 0.01      # lambda value
     Supd = [
@@ -42,23 +44,20 @@ def MOFS_BACO(numFeatures, x, y):
 
         # OPS periodic condition
         if (i+1) % P == 0:
-            pass        # add ops here
+            OPS(graph.population, x, y)        # add ops here
         
-        # solution evaluation
-        for i in range(graph.m):
-            x_temp = features(x,graph.population[i].solution)
-            # fitness function is f = accuracy / (1 + lambda * #features)
-            graph.population[i].fitness = evaluation(x_temp,y) / (1 + lambda_ * graph.population[i].numFeaturesSelected)
+        else:
+            # solution evaluation
+            for i in range(graph.m):
+                x_temp = features(x,graph.population[i].solution)
+                # fitness function is f = accuracy / (1 + lambda * #features)
+                graph.population[i].fitness = evaluation(x_temp,y)
 
         best = Ant(numFeatures)
         for i in range(graph.m):
-            # error less than best => make it best
-            if graph.population[i].fitness > best.fitness:
+            # fitness >= best
+            if graph.population[i].fitness >= best.fitness:
                 best = graph.population[i]         
-            # error == best => make it best if less number of features are selected
-            elif graph.population[i].fitness == best.fitness:
-                if graph.population[i].numFeaturesSelected < best.numFeaturesSelected:
-                    best = graph.population[i]
         
         Supd[0] = best
         if best.fitness > Supd[1].fitness:
@@ -76,24 +75,6 @@ def MOFS_BACO(numFeatures, x, y):
 
 
 
-def features(x, solution):
-    """
-        Function name : features
-        Arguments : 
-            -- x : Input features
-            -- solution : A binary array to select features
-        Returns : 
-            -- x_temp : The selected input features
-    """
-
-    temp = []
-    for i in range(len(solution)):
-        if solution[i] == 1:
-            temp.append(x[:,i:i+1])
-    x_temp = np.concatenate(temp,axis=1)
-    return x_temp
-
-
 
 if __name__ == "__main__":
     # read dataset
@@ -102,9 +83,11 @@ if __name__ == "__main__":
     y = dataset.iloc[:,0].to_numpy()
     x = dataset.iloc[:,1:].to_numpy()
 
+    lambda_ = 0.01      # tuning required
+
     # run the algorithm
     best = MOFS_BACO(len(x[0]),x,y)
     f = features(x,best)
-    acc = evaluation(f,y)
+    acc = evaluation(f,y) * (1 + lambda_ * best.count(1))
     print("\n\nNumber of features selected = {}".format(best.count(1)))
     print("Accuracy = {}%\n\n".format(round(acc*100,2)))

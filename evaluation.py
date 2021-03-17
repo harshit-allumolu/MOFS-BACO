@@ -9,6 +9,25 @@
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import LeaveOneOut
 from sklearn.metrics import accuracy_score
+import numpy as np
+
+
+def features(x, solution):
+    """
+        Function name : features
+        Arguments : 
+            -- x : Input features
+            -- solution : A binary array to select features
+        Returns : 
+            -- x_temp : The selected input features
+    """
+
+    temp = []
+    for i in range(len(solution)):
+        if solution[i] == 1:
+            temp.append(x[:,i:i+1])
+    x_temp = np.concatenate(temp,axis=1)
+    return x_temp
 
 
 def evaluation(x, y):
@@ -23,6 +42,8 @@ def evaluation(x, y):
             -- acc : Accuracy on the given dataset
     """
 
+    lambda_ = 0.01      # tuning required
+    
     # leave one out cross validator
     cv = LeaveOneOut()
     # to maintain the output
@@ -46,4 +67,7 @@ def evaluation(x, y):
     # accuracy calculation
     acc = accuracy_score(y_true,y_pred)
 
-    return acc
+    # fitness value
+    fitness = acc / (1 + lambda_ * len(x[0]))
+
+    return fitness
