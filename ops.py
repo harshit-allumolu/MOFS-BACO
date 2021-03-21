@@ -13,13 +13,15 @@ from operator import attrgetter
 
 
 
-def OPS(population, x, y):
+def OPS(population, x, y, lambda_,k):
     """
         Function name : OPS
         Arguments : 
             -- population : Binary ant system population
             -- x : input features
             -- y : input types/classes
+            -- lambda_ : A variable to control the effect of #features in fitness function
+            -- k : k in knn
     """
 
     # find best solution (max fitness value)
@@ -47,9 +49,9 @@ def OPS(population, x, y):
     X3[u1] = 0
 
     # calculate fitness values
-    f1 = evaluation(features(x,X1),y)
-    f2 = evaluation(features(x,X2),y)
-    f3 = evaluation(features(x,X3),y)
+    f1 = evaluation(features(x,X1),y,lambda_,k)
+    f2 = evaluation(features(x,X2),y,lambda_,k)
+    f3 = evaluation(features(x,X3),y,lambda_,k)
 
     # find which of u1, u2 is more important
     if abs(f1 - f3) >= abs(f2 - f3):
@@ -79,8 +81,8 @@ def OPS(population, x, y):
             newS.numFeaturesSelected -= 1
         
         # evaluate the solutions
-        population[i].fitness = evaluation(features(x,population[i].solution),y)
-        newS.fitness = evaluation(features(x,newSol),y)
+        population[i].fitness = evaluation(features(x,population[i].solution),y,lambda_,k)
+        newS.fitness = evaluation(features(x,newSol),y,lambda_,k)
 
         # add both to new population
         newP.append(population[i])

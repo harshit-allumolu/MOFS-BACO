@@ -26,23 +26,28 @@ def features(x, solution):
     for i in range(len(solution)):
         if solution[i] == 1:
             temp.append(x[:,i:i+1])
+    if len(temp) == 0:
+        return temp
     x_temp = np.concatenate(temp,axis=1)
     return x_temp
 
 
-def evaluation(x, y):
+def evaluation(x, y, lambda_,k):
     """
         Function name : evaluation
         Arguments :
             -- x : input features
             -- y : input types/classes
+            -- lambda_ : A variable to control the effect of #features in fitness function
+            -- k : number of neighbours in knn
         Purpose : Evaluation of constructed subsets using
                 LOOCV in k-nn and mean squared error
         Returns : 
             -- acc : Accuracy on the given dataset
     """
 
-    lambda_ = 0.01      # tuning required
+    if len(x) == 0:
+        return 0
     
     # leave one out cross validator
     cv = LeaveOneOut()
@@ -56,7 +61,7 @@ def evaluation(x, y):
         y_train, y_test = y[train_ix], y[test_ix]
         
         # fit Knn classifier
-        model = KNeighborsClassifier(n_neighbors=1)     # tuning required
+        model = KNeighborsClassifier(n_neighbors=k)     # tuning required
         model.fit(x_train, y_train)
 
         # predict and store the output

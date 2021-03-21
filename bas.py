@@ -52,15 +52,18 @@ class BinaryAntSystem:
             -- w : weights for intensification
     """
 
-    def __init__(self, numFeatures):
+    def __init__(self, numFeatures, m=20, ro=0.02):
         """
             Constructor to initialize a binary ant system
             Arguments : 
                 -- numFeatures : The number of features in the dataset
+                -- m : number of ants
+                -- ro : evaporation factor 
         """
 
         # number of ants    # tuning required
-        self.m = 20     # try to come up with an idea to get m from numFeatures
+        self.m = m     # try to come up with an idea to get m from numFeatures
+        self.re_init = 0 #A flag to check whether re-initialization has happened or not.
 
         # initialize t0, t1
         self.population = list()
@@ -75,7 +78,7 @@ class BinaryAntSystem:
         self.numFeatures = numFeatures
 
         # evaporation factor
-        self.ro = 0.2   # tuning required
+        self.ro = ro   # tuning required
 
         # convergence factor
         self.cf = 0
@@ -155,22 +158,40 @@ class BinaryAntSystem:
                 -- Pheromone updation based on constructed solutions
         """
 
-        # evaporation
-        for i in range(self.numFeatures):
-            self.t0[i] = (1-self.ro) * self.t0[i]
-            self.t1[i] = (1-self.ro)* self.t1[i]
+        if self.cf >= self.cfThresholds[4]: #Condition for pheromone re-initialization.
+            for _ in range(numFeatures):
+                self.t0.append(0.5)
+                self.t1.append(0.5)
+            self.re_init = 1
         
-        # intensification
-        ind = int(self.cf/0.2)-1
-        for i in range(self.numFeatures):
-            temp = 0
-            if Supd[0].solution[i] == 1:
-                temp += self.w[ind][0]
-            if Supd[1].solution[i] == 1:
-                temp += self.w[ind][1]
-            if Supd[2].solution[i] == 1:
-                temp += self.w[ind][2]
-            self.t0[i] += self.ro*temp
-            self.t1[i] += self.ro*temp
+        else:
+            # evaporation
+            for i in range(self.numFeatures):
+                self.t0[i] = (1-self.ro) * self.t0[i]
+                self.t1[i] = (1-self.ro)* self.t1[i]
+            
+            # intensification
+            ind = 0
+            for (i,j) in zip(self.cfThresholds,range(len(self.cfThresholds))):
+                if(self.cf<i):
+                    ind = j
+                    break
 
-        # check about re-initialization 
+            for i in range(self.numFeatures):
+                temp1 = 0 # cumulative weights for solutions containing 1 in ith position
+                temp0 = 0 # cumulative weights for solutions containing 0 in ith position
+                if Supd[0].solution[i] == 1:
+                    temp1 += self.w[ind][0]
+                if Supd[1].solution[i] == 1:
+                    temp1 += self.w[ind][1]
+                if Supd[2].solution[i] == 1:
+                    temp1 += self.w[ind][2]
+                if Supd[0].solution[i] == 0:
+                    temp0 += self.w[ind][0]
+                if Supd[1].solution[i] == 0:
+                    temp0 += self.w[ind][1]
+                if Supd[2].solution[i] == 0:
+                    temp0 += self.w[ind][2]
+
+                self.t0[i] += self.ro*temp0 # update the pheromones corresponding to zero with temp0
+                self.t1[i] += self.ro*temp1 # update the pheromones corresponding to one with temp1
