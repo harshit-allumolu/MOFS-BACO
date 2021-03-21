@@ -90,7 +90,7 @@ if __name__ == "__main__":
     x = dataset.iloc[:,1:].to_numpy()
 
     # all the variable which require tuning
-    n_iterations = 30   # number of iterations
+    n_iterations = 100   # number of iterations
     P = 5               # time period for ops
     lambda_ = 0.01      # tuning required
     m = 20              # number of ants

@@ -159,11 +159,12 @@ class BinaryAntSystem:
         """
 
         if self.cf >= self.cfThresholds[4]: #Condition for pheromone re-initialization.
-            for _ in range(numFeatures):
-                self.t0.append(0.5)
-                self.t1.append(0.5)
+            for i in range(self.numFeatures):
+                self.t0[i] = 0.5
+                self.t1[i] = 0.5
             self.re_init = 1
-        
+            ind = 4
+                
         else:
             # evaporation
             for i in range(self.numFeatures):
@@ -177,21 +178,21 @@ class BinaryAntSystem:
                     ind = j
                     break
 
-            for i in range(self.numFeatures):
-                temp1 = 0 # cumulative weights for solutions containing 1 in ith position
-                temp0 = 0 # cumulative weights for solutions containing 0 in ith position
-                if Supd[0].solution[i] == 1:
-                    temp1 += self.w[ind][0]
-                if Supd[1].solution[i] == 1:
-                    temp1 += self.w[ind][1]
-                if Supd[2].solution[i] == 1:
-                    temp1 += self.w[ind][2]
-                if Supd[0].solution[i] == 0:
-                    temp0 += self.w[ind][0]
-                if Supd[1].solution[i] == 0:
-                    temp0 += self.w[ind][1]
-                if Supd[2].solution[i] == 0:
-                    temp0 += self.w[ind][2]
+        for i in range(self.numFeatures):
+            temp1 = 0 # cumulative weights for solutions containing 1 in ith position
+            temp0 = 0 # cumulative weights for solutions containing 0 in ith position
+            if Supd[0].solution[i] == 1:
+                temp1 += self.w[ind][0]
+            if Supd[1].solution[i] == 1:
+                temp1 += self.w[ind][1]
+            if Supd[2].solution[i] == 1:
+                temp1 += self.w[ind][2]
+            if Supd[0].solution[i] == 0:
+                temp0 += self.w[ind][0]
+            if Supd[1].solution[i] == 0:
+                temp0 += self.w[ind][1]
+            if Supd[2].solution[i] == 0:
+                temp0 += self.w[ind][2]
 
-                self.t0[i] += self.ro*temp0 # update the pheromones corresponding to zero with temp0
-                self.t1[i] += self.ro*temp1 # update the pheromones corresponding to one with temp1
+            self.t0[i] += self.ro*temp0 # update the pheromones corresponding to zero with temp0
+            self.t1[i] += self.ro*temp1 # update the pheromones corresponding to one with temp1
