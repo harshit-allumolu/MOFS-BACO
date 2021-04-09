@@ -49,9 +49,9 @@ def OPS(population, x, y, lambda_,k):
     X3[u1] = 0
 
     # calculate fitness values
-    f1 = evaluation(features(x,X1),y,lambda_,k)
-    f2 = evaluation(features(x,X2),y,lambda_,k)
-    f3 = evaluation(features(x,X3),y,lambda_,k)
+    f1,a1 = evaluation(features(x,X1),y,lambda_,k)
+    f2,a2 = evaluation(features(x,X2),y,lambda_,k)
+    f3,a3 = evaluation(features(x,X3),y,lambda_,k)
 
     # find which of u1, u2 is more important
     if abs(f1 - f3) >= abs(f2 - f3):
@@ -81,8 +81,8 @@ def OPS(population, x, y, lambda_,k):
             newS.numFeaturesSelected -= 1
         
         # evaluate the solutions
-        population[i].fitness = evaluation(features(x,population[i].solution),y,lambda_,k)
-        newS.fitness = evaluation(features(x,newSol),y,lambda_,k)
+        population[i].fitness, population[i].accuracy = evaluation(features(x,population[i].solution),y,lambda_,k)
+        newS.fitness, newS.accuracy = evaluation(features(x,newSol),y,lambda_,k)
 
         # add both to new population
         newP.append(population[i])

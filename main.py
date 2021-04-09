@@ -37,6 +37,9 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
         Ant(numFeatures)
     ]   # ib, rb and gb respectively
 
+    count = 0
+    prev = Supd[2]
+
     # loop start
     for i in range(iterations):
         # generate ants (new generation)
@@ -47,20 +50,21 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
 
         # OPS periodic condition
         if (i+1) % P == 0:
-            OPS(graph.population, x, y, lambda_,k)        # add ops here
+            print("Iteration {} : In OPS".format(i+1))
+            graph.population = OPS(graph.population, x, y, lambda_,k)        # add ops here
         
         else:
             # solution evaluation
-            for i in range(graph.m):
-                x_temp = features(x,graph.population[i].solution)
+            for j in range(graph.m):
+                x_temp = features(x,graph.population[j].solution)
                 # fitness function is f = accuracy / (1 + lambda * #features)
-                graph.population[i].fitness = evaluation(x_temp,y,lambda_,k)
+                graph.population[j].fitness, graph.population[j].accuracy = evaluation(x_temp,y,lambda_,k)
 
         best = Ant(numFeatures)
-        for i in range(graph.m):
+        for j in range(graph.m):
             # fitness >= best
-            if graph.population[i].fitness >= best.fitness:
-                best = graph.population[i]         
+            if graph.population[j].fitness >= best.fitness:
+                best = graph.population[j]         
         
         Supd[0] = best #Iteration best
         if best.fitness > Supd[1].fitness and graph.re_init == 0: #If re-initialization not happened then compare ib with rb.
@@ -68,9 +72,19 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
         elif graph.re_init == 1: #If re-initialization has happened then rb = ib and set re_init flag to zero again.
             Supd[1] = best
             graph.re_init = 0
-        if best.fitness > Supd[2].fitness:
+        if best.fitness >= Supd[2].fitness:
             Supd[2] = best
         
+        if prev.fitness == Supd[2].fitness:
+            count += 1
+        else:
+            prev = Supd[2]
+            count = 1
+        
+        if count == 10:
+            break
+
+        print("Iteration {} : Accuracy - {} and #features - {}; fitness - {}".format(i+1,round(Supd[2].accuracy*100,2),Supd[2].numFeaturesSelected,Supd[2].fitness))
         # calculate convergence factor
         graph.convergenceFactor()   # graph.cf
 
@@ -84,22 +98,43 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
 
 if __name__ == "__main__":
     # read dataset
-    filename = "datasets/" + input("Enter the dataset name : ")
-    dataset = pd.read_csv(filename)
-    y = dataset.iloc[:,0].to_numpy()
-    x = dataset.iloc[:,1:].to_numpy()
+    datasets = [
+        "wine.csv",
+        "ionosphere.csv",
+        "movement_libras.csv",
+        "SCADI.csv",
+        "CNAE-9.csv"
+    ]
+    
+    for data in datasets:   
+        # filename = "datasets/" + input("Enter the dataset name : ")
+        filename = "datasets/" + data
+        dataset = pd.read_csv(filename)
+        y = dataset.iloc[:,0].to_numpy()
+        x = dataset.iloc[:,1:].to_numpy()
 
-    # all the variable which require tuning
-    n_iterations = 100   # number of iterations
-    P = 5               # time period for ops
-    lambda_ = 0.01      # tuning required
-    m = 20              # number of ants
-    ro = 0.02           # evaporation factor
-    k = 1               # k in knn
+        # all the variable which require tuning
+        n_iterations = 60  # number of iterations
+        P = 5               # time period for ops
+        lambda_ = 10 ** (-1*(len(str(len(x[0])))))      # tuning required
+        m = 20              # number of ants
+        ro = 0.02           # evaporation factor
+        k = 1               # k in knn
 
-    # run the algorithm
-    best = MOFS_BACO(len(x[0]),x,y,iterations=n_iterations,P=P,lambda_=lambda_,m=m,ro=ro,k=k)
-    f = features(x,best)
-    acc = evaluation(f,y,lambda_,k) * (1 + lambda_ * best.count(1))
-    print("\n\nNumber of features selected = {}".format(best.count(1)))
-    print("Accuracy = {}%\n\n".format(round(acc*100,2)))
+        accuracy = []
+        feature = []
+        print()
+        # run the algorithm
+        for num in range(30):
+            print("\n----------------- NUMBER {} -----------------".format(num+1))
+            best = MOFS_BACO(len(x[0]),x,y,iterations=n_iterations,P=P,lambda_=lambda_,m=m,ro=ro,k=k)
+            f = features(x,best)
+            fit, acc = evaluation(f,y,lambda_,k)
+            print("\n\nNumber of features selected = {} out of {} features".format(best.count(1),len(x[0])))
+            print("Accuracy = {}%\n\n".format(round(acc*100,2)))
+            accuracy.append(round(acc*100,2))
+            feature.append(best.count(1))
+        results = pd.DataFrame([i+1 for i in range(30)],columns=["S.No."])
+        results['Accuracy'] = accuracy
+        results['Features'] = feature
+        results.to_excel(f'results/{filename[9:]}.xlsx')

@@ -47,7 +47,7 @@ def evaluation(x, y, lambda_,k):
     """
 
     if len(x) == 0:
-        return 0
+        return 0,0
     
     # leave one out cross validator
     cv = LeaveOneOut()
@@ -73,6 +73,6 @@ def evaluation(x, y, lambda_,k):
     acc = accuracy_score(y_true,y_pred)
 
     # fitness value
-    fitness = acc / (1 + lambda_ * len(x[0]))
+    fitness = (acc*10)**2 / (1 + lambda_ * len(x[0]))
 
-    return fitness
+    return fitness, acc

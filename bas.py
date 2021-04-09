@@ -17,6 +17,7 @@ class Ant:
                         particular ant after traversing through the graph
             -- numFeaturesSelected : The number of features selected in the solution
                         which is the number of 1s in the string
+            -- accuracy : Accuracy obtained using knn
     """
 
     def __init__(self, numFeatures):
@@ -34,6 +35,9 @@ class Ant:
 
         # A variable to track the no. of features selected in the solution
         self.numFeaturesSelected = self.solution.count(1)
+
+        # Accuracy
+        self.accuracy = 0
 
 
 
