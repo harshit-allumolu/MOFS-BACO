@@ -49,7 +49,8 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
         graph.traverse()
 
         # OPS periodic condition
-        if (i+1) % P == 0:
+        # if (i+1) % P == 0:
+        if False: #change here for ops
             print("Iteration {} : In OPS".format(i+1))
             graph.population = OPS(graph.population, x, y, lambda_,k)        # add ops here
         
@@ -91,7 +92,7 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
         # update pheromone values
         graph.updatePheromone(Supd)
 
-    return Supd[2].solution  # global best solution
+    return Supd[2]  # global best solution
 
 
 
@@ -99,11 +100,7 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
 if __name__ == "__main__":
     # read dataset
     datasets = [
-        "wine.csv",
-        "ionosphere.csv",
-        "movement_libras.csv",
-        "SCADI.csv",
-        "CNAE-9.csv"
+        "parkinsons.csv"
     ]
     
     for data in datasets:   
@@ -128,9 +125,8 @@ if __name__ == "__main__":
         for num in range(30):
             print("\n----------------- NUMBER {} -----------------".format(num+1))
             best = MOFS_BACO(len(x[0]),x,y,iterations=n_iterations,P=P,lambda_=lambda_,m=m,ro=ro,k=k)
-            f = features(x,best)
-            fit, acc = evaluation(f,y,lambda_,k)
-            print("\n\nNumber of features selected = {} out of {} features".format(best.count(1),len(x[0])))
+            fit, acc = best.fitness, best.accuracy
+            print("\n\nNumber of features selected = {} out of {} features".format(best.numFeaturesSelected,len(x[0])))
             print("Accuracy = {}%\n\n".format(round(acc*100,2)))
             accuracy.append(round(acc*100,2))
             feature.append(best.count(1))
