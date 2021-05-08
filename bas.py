@@ -136,7 +136,6 @@ class BinaryAntSystem:
                         self.population[i].solution[j] = random.randint(0,1)
                 # number of features selected
                 self.population[i].numFeaturesSelected = self.population[i].solution.count(1)
-    
 
     def convergenceFactor(self):
         """
@@ -170,17 +169,17 @@ class BinaryAntSystem:
             ind = 4
                 
         else:
-            # evaporation
-            for i in range(self.numFeatures):
-                self.t0[i] = (1-self.ro) * self.t0[i]
-                self.t1[i] = (1-self.ro)* self.t1[i]
-            
             # intensification
             ind = 0
             for (i,j) in zip(self.cfThresholds,range(len(self.cfThresholds))):
                 if(self.cf<i):
                     ind = j
                     break
+        
+        # evaporation
+        for i in range(self.numFeatures):
+            self.t0[i] = (1-self.ro)* self.t0[i]
+            self.t1[i] = (1-self.ro)* self.t1[i]
 
         for i in range(self.numFeatures):
             temp1 = 0 # cumulative weights for solutions containing 1 in ith position

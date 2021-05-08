@@ -12,6 +12,7 @@ from evaluation import features
 from ops import OPS
 import pandas as pd
 import numpy as np
+import time
 
 
 def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.02,k=1):
@@ -49,8 +50,8 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
         graph.traverse()
 
         # OPS periodic condition
-        # if (i+1) % P == 0:
-        if False: #change here for ops
+        if (i+1) % P == 0:
+        # if False: #change here for ops
             print("Iteration {} : In OPS".format(i+1))
             graph.population = OPS(graph.population, x, y, lambda_,k)        # add ops here
         
@@ -100,7 +101,13 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
 if __name__ == "__main__":
     # read dataset
     datasets = [
-        "parkinsons.csv"
+        # "wine.csv",
+        # "ionosphere.csv",
+        # "movement_libras.csv",
+        "SCADI.csv"
+        # "parkinsons.csv",
+        # "sonar.csv",
+        # "vehicle.csv"
     ]
     
     for data in datasets:   
@@ -120,17 +127,23 @@ if __name__ == "__main__":
 
         accuracy = []
         feature = []
+        total_time = 0
         print()
         # run the algorithm
         for num in range(30):
             print("\n----------------- NUMBER {} -----------------".format(num+1))
+            t1 = time.time()
             best = MOFS_BACO(len(x[0]),x,y,iterations=n_iterations,P=P,lambda_=lambda_,m=m,ro=ro,k=k)
             fit, acc = best.fitness, best.accuracy
+            t2 = time.time()
+            total_time += (t2-t1)/60
             print("\n\nNumber of features selected = {} out of {} features".format(best.numFeaturesSelected,len(x[0])))
             print("Accuracy = {}%\n\n".format(round(acc*100,2)))
             accuracy.append(round(acc*100,2))
-            feature.append(best.count(1))
-        results = pd.DataFrame([i+1 for i in range(30)],columns=["S.No."])
-        results['Accuracy'] = accuracy
-        results['Features'] = feature
-        results.to_excel(f'results/{filename[9:]}.xlsx')
+            feature.append(best.numFeaturesSelected)
+        total_time /= 1800
+        print(f"{data} : {round(total_time,2)} minutes")
+        # results = pd.DataFrame([i+1 for i in range(30)],columns=["S.No."])
+        # results['Accuracy'] = accuracy
+        # results['Features'] = feature
+        # results.to_excel(f'results/{filename[9:]}.xlsx',index=False)
