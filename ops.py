@@ -13,7 +13,7 @@ from operator import attrgetter
 
 
 
-def OPS(population, x, y, lambda_,k):
+def OPS(population, x, y, lambda_,k,baco):
     """
         Function name : OPS
         Arguments : 
@@ -32,10 +32,24 @@ def OPS(population, x, y, lambda_,k):
     
     # for finding u1
     temp_u1 = np.where(np.array(best.solution)==1)[0]
+    if len(temp_u1) == 0:
+        # solution evaluation
+        for j in range(len(population[0].solution)):
+            x_temp = features(x,population[j].solution)
+            # fitness function is f = accuracy / (1 + lambda * #features)
+            population[j].fitness, population[j].accuracy = evaluation(x_temp,y,lambda_,k,baco=baco)
+        return population
     u1 = temp_u1[random.randint(0,len(temp_u1)-1)]
 
     # for finding u2
     temp_u2 = np.where(np.array(best.solution)==0)[0]
+    if len(temp_u2) == 0:
+        # solution evaluation
+        for j in range(len(population[0].solution)):
+            x_temp = features(x,population[j].solution)
+            # fitness function is f = accuracy / (1 + lambda * #features)
+            population[j].fitness, population[j].accuracy = evaluation(x_temp,y,lambda_,k,baco=baco)
+        return population
     u2 = temp_u2[random.randint(0,len(temp_u2)-1)]
 
     # solutions required to compare
@@ -49,9 +63,9 @@ def OPS(population, x, y, lambda_,k):
     X3[u1] = 0
 
     # calculate fitness values
-    f1,a1 = evaluation(features(x,X1),y,lambda_,k)
-    f2,a2 = evaluation(features(x,X2),y,lambda_,k)
-    f3,a3 = evaluation(features(x,X3),y,lambda_,k)
+    f1,a1 = evaluation(features(x,X1),y,lambda_,k,baco=baco)
+    f2,a2 = evaluation(features(x,X2),y,lambda_,k,baco=baco)
+    f3,a3 = evaluation(features(x,X3),y,lambda_,k,baco=baco)
 
     # find which of u1, u2 is more important
     if abs(f1 - f3) >= abs(f2 - f3):
@@ -81,8 +95,8 @@ def OPS(population, x, y, lambda_,k):
             newS.numFeaturesSelected -= 1
         
         # evaluate the solutions
-        population[i].fitness, population[i].accuracy = evaluation(features(x,population[i].solution),y,lambda_,k)
-        newS.fitness, newS.accuracy = evaluation(features(x,newSol),y,lambda_,k)
+        population[i].fitness, population[i].accuracy = evaluation(features(x,population[i].solution),y,lambda_,k,baco=baco)
+        newS.fitness, newS.accuracy = evaluation(features(x,newSol),y,lambda_,k,baco=baco)
 
         # add both to new population
         newP.append(population[i])

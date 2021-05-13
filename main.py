@@ -15,7 +15,7 @@ import numpy as np
 import time
 
 
-def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.02,k=1):
+def MOFS_BACO(numFeatures, x, y, iterations=60, P=5, lambda_=0.01, m=20, ro=0.65,k=1,baco=False):
     """
         Function name : MOFS-BACO
         Arguments : 
@@ -30,6 +30,25 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
             -- k : k in knn
     """
     
+    # parameters printing
+    print("List of all parameters : ")
+    print(" {}".format("".join(["_" for i in range(40)])))
+    print("| {:23} | {:12} |".format("",""))
+    print("| {:23} | {:12} |".format("Number of features",numFeatures))
+    print("| {:23} | {:12} |".format("",""))
+    print("| {:23} | {:12} |".format("Number of iterations",iterations))
+    print("| {:23} | {:12} |".format("",""))
+    print("| {:23} | {:12} |".format("Number of Ants",m))
+    print("| {:23} | {:12} |".format("",""))
+    print("| {:23} | {:12} |".format("Evaporation factor",ro))
+    print("| {:23} | {:12} |".format("",""))
+    print("| {:23} | {:12} |".format("Time period for OPS",P))
+    print("| {:23} | {:12} |".format("",""))
+    print("| {:23} | {:12} |".format("Lambda",lambda_))
+    print("| {:23} | {:12} |".format("",""))
+    print("| {:23} | {:12} |".format("k for KNN",k))
+    print("|{}|\n".format("".join(["_" for i in range(40)])))
+
     # intialization
     graph = BinaryAntSystem(numFeatures,m=m,ro=ro)
     Supd = [
@@ -42,6 +61,7 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
     prev = Supd[2]
 
     # loop start
+    print("Loop starts ...")
     for i in range(iterations):
         # generate ants (new generation)
         graph.generateNewAnts()
@@ -53,14 +73,14 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
         if (i+1) % P == 0:
         # if False: #change here for ops
             print("Iteration {} : In OPS".format(i+1))
-            graph.population = OPS(graph.population, x, y, lambda_,k)        # add ops here
+            graph.population = OPS(graph.population, x, y, lambda_,k,baco=baco)        # add ops here
         
         else:
             # solution evaluation
             for j in range(graph.m):
                 x_temp = features(x,graph.population[j].solution)
                 # fitness function is f = accuracy / (1 + lambda * #features)
-                graph.population[j].fitness, graph.population[j].accuracy = evaluation(x_temp,y,lambda_,k)
+                graph.population[j].fitness, graph.population[j].accuracy = evaluation(x_temp,y,lambda_,k,baco=baco)
 
         best = Ant(numFeatures)
         for j in range(graph.m):
@@ -101,49 +121,66 @@ def MOFS_BACO(numFeatures, x, y, iterations=200, P=5, lambda_=0.01, m=20, ro=0.0
 if __name__ == "__main__":
     # read dataset
     datasets = [
-        # "wine.csv",
+        "wine.csv",
         # "ionosphere.csv",
         # "movement_libras.csv",
-        "SCADI.csv"
+        # "SCADI.csv",
         # "parkinsons.csv",
         # "sonar.csv",
-        # "vehicle.csv"
+        # "vehicle.csv",
+        # "iris.csv",
+        # "yeast.csv",
+        # "glass.csv"
     ]
     
     for data in datasets:   
         # filename = "datasets/" + input("Enter the dataset name : ")
+        print("\nDataset : {}\n".format(data))
         filename = "datasets/" + data
         dataset = pd.read_csv(filename)
         y = dataset.iloc[:,0].to_numpy()
         x = dataset.iloc[:,1:].to_numpy()
 
         # all the variable which require tuning
-        n_iterations = 60  # number of iterations
+        n_iterations = 50  # number of iterations
         P = 5               # time period for ops
         lambda_ = 10 ** (-1*(len(str(len(x[0])))))      # tuning required
-        m = 20              # number of ants
-        ro = 0.02           # evaporation factor
+        m = 50              # number of ants
+        ro = 0.049           # evaporation factor
         k = 1               # k in knn
+        baco = True         # change if not comparing with baco and abaco
 
+        # ros = np.arange(start=0.05,stop=1,step=0.05)
+        # for ro in ros: 
         accuracy = []
         feature = []
+        runtime = []
+        sols = []
         total_time = 0
+        num_runs = 20
         print()
         # run the algorithm
-        for num in range(30):
-            print("\n----------------- NUMBER {} -----------------".format(num+1))
+        for num in range(num_runs):
+            # print("\n----------------- {} {} -----------------".format(data[:data.index('.')],num+1))
             t1 = time.time()
-            best = MOFS_BACO(len(x[0]),x,y,iterations=n_iterations,P=P,lambda_=lambda_,m=m,ro=ro,k=k)
+            best = MOFS_BACO(len(x[0]),x,y,iterations=n_iterations,P=P,lambda_=lambda_,m=m,ro=ro,k=k,baco=baco)
             fit, acc = best.fitness, best.accuracy
             t2 = time.time()
-            total_time += (t2-t1)/60
-            print("\n\nNumber of features selected = {} out of {} features".format(best.numFeaturesSelected,len(x[0])))
+            total_time += (t2-t1)
+            print("\n\nNumber of features selected = {} out of {} features for {} dataset".format(best.numFeaturesSelected,len(x[0]),data[:data.index('.')]))
             print("Accuracy = {}%\n\n".format(round(acc*100,2)))
             accuracy.append(round(acc*100,2))
             feature.append(best.numFeaturesSelected)
-        total_time /= 1800
-        print(f"{data} : {round(total_time,2)} minutes")
-        # results = pd.DataFrame([i+1 for i in range(30)],columns=["S.No."])
-        # results['Accuracy'] = accuracy
-        # results['Features'] = feature
-        # results.to_excel(f'results/{filename[9:]}.xlsx',index=False)
+            sols.append(best.solution)
+            runtime.append(t2-t1)
+        total_time /= 10
+        # print(f"{data} average time taken per run : {round(total_time,2)} seconds")
+        results = pd.DataFrame([i+1 for i in range(num_runs)],columns=["S.No."])
+        results['Accuracy'] = accuracy
+        results['Features'] = feature
+        results['Solution'] = sols
+        print(results)
+        print()
+        print(results.mean(axis=0,numeric_only=True))
+        # results['Run time'] = runtime
+        # results.to_excel(f'results/new/without ops/{filename[9:]}.xlsx',index=False)

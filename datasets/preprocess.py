@@ -1,10 +1,12 @@
 import pandas as pd
 
-df = pd.read_csv("vehicle.csv",header=None)
+df = pd.read_csv("yeast.csv")
 
-for x in df.columns:
-    if x!=0:
-        df[x] = (df[x]-min(df[x]))/(max(df[x]-min(df[x])))
+classes = list(set(df.iloc[:,-1]))
+print(len(classes),len(df))
 
-# print(df)
-df.to_csv("vehicle.csv",index=None,header=None)
+for i in range(len(df)):
+    df.iloc[i,-1] = classes.index(df.iloc[i,-1])
+
+print(df)
+df.to_csv("yeast.csv",index=None)
