@@ -142,13 +142,13 @@ if __name__ == "__main__":
         x = dataset.iloc[:,1:].to_numpy()
 
         # all the variable which require tuning
-        n_iterations = 10  # number of iterations
+        n_iterations = 5  # number of iterations
         P = 5               # time period for ops
         lambda_ = 10 ** (-1*(len(str(len(x[0])))))      # tuning required
-        m = 20              # number of ants
-        ro = 0.65           # evaporation factor
+        m = 50              # number of ants
+        ro = 0.049           # evaporation factor
         k = 1               # k in knn
-        baco = False         # change if not comparing with baco and abaco
+        baco = True         # change if not comparing with baco and abaco
 
         # ros = np.arange(start=0.05,stop=1,step=0.05)
         # for ro in ros: 
